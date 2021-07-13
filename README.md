@@ -1,13 +1,20 @@
-# Abstract Design Patterns Package
-
-This package, with the aim of accelerating and facilitating the use of some design patterns, offers abstract classes that by inheriting other classes from them, you can more easily achieve the desired design patterns. These classes are implemented to be inherited alongside other classes.
-
-
-
-## Construction Requirements Integrator
+# Construction Requirements Integrator Package
 
 With the help of this module, classes can be inherited that are built and configured after their needs are met (instead of being launched immediately after creation).
-You can see an example of this application below:
+You can see an example of this application below.
+
+In this example, the `Example` class needs 3 arguments `x`,`y` and `z` to be constructed. For example, it will calculate volume of a shape in its constructor, so it needs all the arguments at the same time.
+We want to initialize `x` and `y` for our `Example` instanse using instances of `XProvider` and `YProvider` classes.
+The problem is there both `XProvider` and `YProvder` need their target object to provide their value.
+So we neet to have an uncompleted instance of `Example` till `XProvider` and `YProvider` finish their processes. Then the instance can complete its construction.
+
+* Inherit your class, that needs uncomleted construction, from `CRI` abstract class.
+* Pass the construction reqired arguments to the `CRI.__init__` (in the `__init__` function of inherited class) as below. We will call them "construction requirements". Don't forget to set default value of the delayable construction requirements in the `__init__` function of inherited class to `None`. The `None` value is what `CRI` knows as "NOT YET"!
+* Override abstract `__construct__` function in the inherited class. Arguments are the same as construction requirements.
+* Once you get an instance of your inherited class, you can pass it each construction requirement value that you already know, as initialization arguments. After that, you can assign values to construction requirements using `instance.meet_requirement` function as in the example below.
+* The instance starts to complete the construction, As soon as the class requirements are met.
+* Use `construction_required` decorator to avoid running a function before completion of the construction.
+In the example below, `get_construction_status` can be called before completion of construction but `get_volume` cann't.
 
 ```python
 from construction_requirements_integrator import CRI, construction_required
@@ -49,10 +56,10 @@ XProvider().provide_for(example1)
 YProvider().provide_for(example1)
 print(example1.get_construction_status())
 # >>> True
-print(example1.get_volume())
-# >>> 24
 print(example1.x, example1.y, example1.z)
 # >>> 6 2 2
+print(example1.get_volume())
+# >>> 24
 
 example2 = Example(z=2)
 print(example2.get_construction_status())
@@ -61,81 +68,25 @@ print(example2.get_volume())
 # >>> Exception: The object is not constructed yet!
 ```
 
-* Use `construction_required` annotation to avoid running a function before completion of the construction.
-
 When calling the `__init__` function from the `CRI` class, you can input settings:
 
-* `overwrite_requirement (default: False)`: If true, if one entry is entered multiple times, the previous values will be ignored and the new value replaced.
-* `ignore_resetting_error (default: False)`: If `overwrite_requirement` is not true, if one entry is entered multiple times, the object raises an error. This error will not be published if `ignore_resetting_error` is true.
-* `auto_construct (default: True)`: If true, the class starts to build, As soon as the class requirements are met. If false, You must call `integrate_requirements` to build the class.
-* `purge_after_construction (default: True)`: The class does not need the values collected for the requirements after completing the build process (unless it is stored again during the construction process). Therefore, after completing this process, it will delete them.
-You can prevent this by setting `purge_after_construction` to `False`.
-* `reconstruct (default: False)`: If true, allows the class to be reconstructed with new values.
-
-
-
-## Abstract Object Decorator
-
-With the help of this module, you can implement decorators careless about things you don't want to change.
-You can see an example of this application below:
+* `overwrite_requirement (default: False)`: If true, if one construction requirement meets multiple times, the previous values will be ignored and the new value replaced. Else, based on `ignore_overwrite_error` setting, new value will be ignored or cause an exception.
+* `ignore_overwrite_error (default: False)`: If `overwrite_requirement` be not true and one construction requirement meets multiple times, the object raises an error. This error will not be published if `ignore_overwrite_error` is true.
+* `auto_construct (default: True)`: If true, the class starts to complete the construction, As soon as the class requirements are met. If false, You must call `integrate_requirements` function to complete the construction.
+* `purge_after_construction (default: True)`: The class does not need the construction requirements after completion of cunstruction (unless it is stored again during the construction process).
+Therefore, after completing this process, it will delete them.
 
 ```python
-from abstract_object_decorator import AOD
-
-class Parent:
-    def __init__(self):
-        self.parrent_property = 1
-
-    def parent_functionality(self):
-        return 10
-
-class Child(Parent):
-    def __init__(self):
-        super().__init__()
-        self.child_property = 2
-        self.parrent_property = 67
-
-    def child_functionality(self):
-        return 20
-
-class FirstDecorator(Parent, AOD):
-    def __init__(self, obj):
-        AOD.__init__(self, obj)
-        self.first_decorator_property = 3
-    
-    def first_decorator_functionality(self):
-        return 30
-
-    def child_functionality(self):
-        return self.obj.child_functionality()*2
-
-class SecondDecorator(Parent, AOD):
-    def __init__(self, obj):
-        AOD.__init__(self, obj)
-        self.child_property = 12
-
-    def child_functionality(self):
-        return self.obj.child_functionality()*3
-
-
-decorated = SecondDecorator(FirstDecorator(Child()))
-print(decorated.parrent_property)
-# >>> 67
-print(decorated.child_property)
-# >>> 12
-print(decorated.first_decorator_property)
-# >>> 3
-print(decorated.parent_functionality())
-# >>> 10
-print(decorated.child_functionality())
-# >>> 120
-print(decorated.first_decorator_functionality())
-# >>> 30
-print(issubclass(type(decorated), Parent))
-# >>> True
+print(example1.__dict__)
+# >>> {'_CRI__reconstruct': False, 'is_constructed': True, 'x': 6, 'y': 1, 'z': 2, 'volume': 12}
+print(example2.__dict__)
+# >>> {'_CRI__requirements': {'x': None, 'y': None, 'z': 2}, '_CRI__overwrite_requirement': False, '_CRI__ignore_overwrite_error': False, '_CRI__auto_construct': True, '_CRI__purge_after_construction': True, '_CRI__reconstruct': False, 'is_constructed': False}
 ```
 
+You can prevent this deletion by setting `purge_after_construction` to `False`.
+* `reconstruct (default: False)`: If true, allows the class to be reconstructed with new values. Note that you can not set both `purge_after_construction` and `reconstruct` to `True` because reconstruction needs construction requirements. Also note that if `auto_construct` be true, every `meet_requirement` call has the potential to reconstruct the object.
 
 
 ## Installation
-Package is avalable on [PyPI](https://test.pypi.org/project/abstract-design-patterns/).
+
+```pip install construction-requirements-integrator```

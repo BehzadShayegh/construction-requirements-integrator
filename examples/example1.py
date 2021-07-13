@@ -46,4 +46,9 @@ example2 = Example(z=2)
 print(example2.get_construction_status())
 # >>> False
 print(example2.get_volume())
-# >>> Exception: The object is not constructed yet!
+# Exception: The object is not constructed yet!
+
+print(example1.__dict__)
+# >>> {'_CRI__reconstruct': False, 'is_constructed': True, 'x': 6, 'y': 1, 'z': 2, 'volume': 12}
+print(example2.__dict__)
+# >>> {'_CRI__requirements': {'x': None, 'y': None, 'z': 2}, '_CRI__overwrite_requirement': False, '_CRI__ignore_overwrite_error': False, '_CRI__auto_construct': True, '_CRI__purge_after_construction': True, '_CRI__reconstruct': False, 'is_constructed': False}

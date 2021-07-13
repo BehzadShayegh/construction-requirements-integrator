@@ -1,1 +1,1 @@
-from .construction_requirements_integrator import CRI
+from .construction_requirements_integrator import CRI,construction_required

@@ -4,7 +4,7 @@ class CRI(ABC):
     def __init__(
         self,
         overwrite_requirement: bool = False,
-        ignore_resetting_error: bool = False,
+        ignore_overwrite_error: bool = False,
         auto_construct: bool = True,
         purge_after_construction: bool = True,
         reconstruct: bool = False,
@@ -12,7 +12,7 @@ class CRI(ABC):
     ) -> None:
         self.__requirements = requirements
         self.__overwrite_requirement = overwrite_requirement
-        self.__ignore_resetting_error = ignore_resetting_error
+        self.__ignore_overwrite_error = ignore_overwrite_error
         self.__auto_construct = auto_construct
         if purge_after_construction and reconstruct:
             raise Exception("Can not reconstruct a class after purging it!")
@@ -36,7 +36,7 @@ class CRI(ABC):
         if self.is_constructed:
             del self.__requirements
             del self.__overwrite_requirement
-            del self.__ignore_resetting_error
+            del self.__ignore_overwrite_error
             del self.__auto_construct
             del self.__purge_after_construction
     
@@ -52,9 +52,11 @@ class CRI(ABC):
     def meet_requirement(self, requirement: str, value) -> None:
         if self.is_constructed and not self.__reconstruct:
             raise Exception("The object has already been constructed.")
+        if value is None:
+            raise Exception("Can not set a requirement to None.")
         if self.__requirements[requirement] is None or self.__overwrite_requirement:
             self.__requirements[requirement] = value
-        elif not self.__ignore_resetting_error:
+        elif not self.__ignore_overwrite_error:
             raise Exception("The requirement has already been met.")
         if self.__auto_construct:
             self.integrate_requirements(ignore_requirements_meeting_error=True)
