@@ -73,6 +73,7 @@ When calling the `__init__` function from the `CRI` class, you can input setting
 * `overwrite_requirement (default: False)`: If true, if one construction requirement meets multiple times, the previous values will be ignored and the new value replaced. Else, based on `ignore_overwrite_error` setting, new value will be ignored or cause an exception.
 * `ignore_overwrite_error (default: False)`: If `overwrite_requirement` be not true and one construction requirement meets multiple times, the object raises an error. This error will not be published if `ignore_overwrite_error` is true.
 * `auto_construct (default: True)`: If true, the class starts to complete the construction, As soon as the class requirements are met. If false, You must call `integrate_requirements` function to complete the construction.
+Use `ignore_requirements_meeting_error` argument of `integrate_requirements` function to manage raising exception it.
 * `purge_after_construction (default: True)`: The class does not need the construction requirements after completion of cunstruction (unless it is stored again during the construction process).
 Therefore, after completing this process, it will delete them.
 
@@ -86,6 +87,9 @@ print(example2.__dict__)
 You can prevent this deletion by setting `purge_after_construction` to `False`.
 * `reconstruct (default: False)`: If true, allows the class to be reconstructed with new values. Note that you can not set both `purge_after_construction` and `reconstruct` to `True` because reconstruction needs construction requirements. Also note that if `auto_construct` be true, every `meet_requirement` call has the potential to reconstruct the object.
 
+**add_to_construction_requirements(self, \*\*requirements):** Use this function to add to construction requirements after initialization. Its very useful when you are using inheritance.
+
+**A technique:** If `auto_construct` be true and all the requirements defined in the initialization satisfied befor calling `add_to_construction_requirements`, the object will be completly constructed and will not catch new requirements. To prevent this state, you can simply add an unreal requirement in initialization and set it to `None`. It will prevent the object to be auto constructed untill you give a value to it. After calling `add_to_construction_requirements`, you can simply satisfy this virtual requirement using `meet_requirement` function and ignore it in `__construct__`.
 
 ## Installation
 

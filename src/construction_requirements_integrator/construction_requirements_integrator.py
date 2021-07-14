@@ -15,10 +15,17 @@ class CRI(ABC):
         self.__ignore_overwrite_error = ignore_overwrite_error
         self.__auto_construct = auto_construct
         if purge_after_construction and reconstruct:
-            raise Exception("Can not reconstruct a class after purging it!")
+            raise Exception("Can not reconstruct an object after purging it!")
         self.__purge_after_construction = purge_after_construction
         self.__reconstruct = reconstruct
         self.is_constructed = False
+        if self.__auto_construct:
+            self.integrate_requirements(ignore_requirements_meeting_error=True)
+
+    def add_to_construction_requirements(**requirements):
+        if self.is_constructed:
+            raise Exception("Can not add requrements to a constructed object")
+        self.__requirements.update(**requirement)
             
     @abstractmethod
     def __construct__(self, **requirements) -> None:
