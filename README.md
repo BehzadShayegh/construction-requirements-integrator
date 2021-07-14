@@ -3,9 +3,9 @@
 With the help of this module, classes can be inherited that are built and configured after their needs are met (instead of being launched immediately after creation).
 You can see an example of this application below.
 
-In this example, the `Example` class needs 3 arguments `x`,`y` and `z` to be constructed. For example, it will calculate volume of a shape in its constructor, so it needs all the arguments at the same time.
+In this example, the `Example` class needs 3 arguments `x`,`y` and `z` to be constructed. For example, it will calculate volume of a cube in its constructor, so it needs all the arguments at the same time.
 We want to initialize `x` and `y` for our `Example` instanse using instances of `XProvider` and `YProvider` classes.
-The problem is there both `XProvider` and `YProvder` need their target object to provide their value.
+The problem is there both `XProvider` and `YProvder` need their target object to provide their values.
 So we neet to have an uncompleted instance of `Example` till `XProvider` and `YProvider` finish their processes. Then the instance can complete its construction.
 
 * Inherit your class, that needs uncomleted construction, from `CRI` abstract class.
