@@ -8,6 +8,7 @@ class CRI(ABC):
         auto_construct: bool = True,
         purge_after_construction: bool = True,
         reconstruct: bool = False,
+        construction_permission: bool = True,
         **requirements
     ) -> None:
         self.__requirements = requirements
@@ -19,13 +20,21 @@ class CRI(ABC):
         self.__purge_after_construction = purge_after_construction
         self.__reconstruct = reconstruct
         self.is_constructed = False
-        if self.__auto_construct:
-            self.integrate_requirements(ignore_requirements_meeting_error=True)
+        self.__construction_permission = construction_permission
+        self.__do_auto_construct()
 
-    def add_to_construction_requirements(**requirements):
+    def add_to_construction_requirements(self, **requirements):
         if self.is_constructed:
             raise Exception("Can not add requrements to a constructed object")
-        self.__requirements.update(**requirement)
+        self.__requirements.update(**requirements)
+
+    def set_construction_permission(self, construction_permission):
+        self.__construction_permission = construction_permission
+        self.__do_auto_construct()
+
+    def __do_auto_construct(self):
+        if self.__auto_construct:
+            self.integrate_requirements(ignore_requirements_meeting_error=True)
             
     @abstractmethod
     def __construct__(self, **requirements) -> None:
@@ -37,7 +46,7 @@ class CRI(ABC):
         for requirement,value in self.__requirements.items():
             if value is None:
                 return False
-        return True
+        return self.__construction_permission
         
     def __purge_after_construction__(self) -> None:
         if self.is_constructed:
@@ -46,6 +55,7 @@ class CRI(ABC):
             del self.__ignore_overwrite_error
             del self.__auto_construct
             del self.__purge_after_construction
+            del self.__construction_permission
     
     def integrate_requirements(self, ignore_requirements_meeting_error=False) -> None:
         if self.__are_requirements_met__():
@@ -56,7 +66,10 @@ class CRI(ABC):
         elif not ignore_requirements_meeting_error:
             raise Exception("The requirements are not met.")
         
-    def meet_requirement(self, requirement: str, value) -> None:
+    def meet_requirement(self, **kwargs) -> None:
+        if len(kwargs)>1:
+            raise Exception("No more than one requirement can be set at a call.")
+        requirement,value = next(iter(kwargs.items()))
         if self.is_constructed and not self.__reconstruct:
             raise Exception("The object has already been constructed.")
         if value is None:
@@ -65,14 +78,13 @@ class CRI(ABC):
             self.__requirements[requirement] = value
         elif not self.__ignore_overwrite_error:
             raise Exception("The requirement has already been met.")
-        if self.__auto_construct:
-            self.integrate_requirements(ignore_requirements_meeting_error=True)
+        self.__do_auto_construct()
 
 
 
 def construction_required(function):
-    def wrapper(self, **args):
+    def wrapper(self, **kwargs):
         if not self.is_constructed:
             raise Exception("The object is not constructed yet!")
-        return function(self, **args)
+        return function(self, **kwargs)
     return wrapper

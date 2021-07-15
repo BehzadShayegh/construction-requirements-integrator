@@ -4,17 +4,17 @@ With the help of this module, classes can be inherited that are built and config
 You can see an example of this application below.
 
 In this example, the `Example` class needs 3 arguments `x`,`y` and `z` to be constructed. For example, it will calculate volume of a cube in its constructor, so it needs all the arguments at the same time.
-We want to initialize `x` and `y` for our `Example` instanse using instances of `XProvider` and `YProvider` classes.
+We want to initialize `x` and `y` for our `Example` instance using instances of `XProvider` and `YProvider` classes.
 The problem is there both `XProvider` and `YProvder` need their target object to provide their values.
-So we neet to have an uncompleted instance of `Example` till `XProvider` and `YProvider` finish their processes. Then the instance can complete its construction.
+So we need to have an uncompleted instance of `Example` till `XProvider` and `YProvider` finish their processes. Then the instance can complete its construction.
 
-* Inherit your class, that needs uncomleted construction, from `CRI` abstract class.
+* Inherit your class, that needs uncompleted construction, from `CRI` abstract class.
 * Pass the construction reqired arguments to the `CRI.__init__` (in the `__init__` function of inherited class) as below. We will call them "construction requirements". Don't forget to set default value of the delayable construction requirements in the `__init__` function of inherited class to `None`. The `None` value is what `CRI` knows as "NOT YET"!
 * Override abstract `__construct__` function in the inherited class. Arguments are the same as construction requirements.
 * Once you get an instance of your inherited class, you can pass it each construction requirement value that you already know, as initialization arguments. After that, you can assign values to construction requirements using `instance.meet_requirement` function as in the example below.
 * The instance starts to complete the construction, As soon as the class requirements are met.
 * Use `construction_required` decorator to avoid running a function before completion of the construction.
-In the example below, `get_construction_status` can be called before completion of construction but `get_volume` cann't.
+In the example below, `get_construction_status` can be called before completion of construction but `get_volume` can not.
 
 ```python
 from construction_requirements_integrator import CRI, construction_required
@@ -25,14 +25,14 @@ class XProvider:
         self.x = int((random()*10))
 
     def provide_for(self, obj):
-        obj.meet_requirement('x', self.x)
+        obj.meet_requirement(x=self.x)
 
 class YProvider:
     def __init__(self):
         self.y = int((random()*5))
 
     def provide_for(self, obj):
-        obj.meet_requirement('y', self.y)
+        obj.meet_requirement(y=self.y)
 
 class Example(CRI):
     def __init__(self, x=None, y=None, z=None):
@@ -65,7 +65,7 @@ example2 = Example(z=2)
 print(example2.get_construction_status())
 # >>> False
 print(example2.get_volume())
-# >>> Exception: The object is not constructed yet!
+# Exception: The object is not constructed yet!
 ```
 
 When calling the `__init__` function from the `CRI` class, you can input settings:
@@ -86,10 +86,60 @@ print(example2.__dict__)
 
 You can prevent this deletion by setting `purge_after_construction` to `False`.
 * `reconstruct (default: False)`: If true, allows the class to be reconstructed with new values. Note that you can not set both `purge_after_construction` and `reconstruct` to `True` because reconstruction needs construction requirements. Also note that if `auto_construct` be true, every `meet_requirement` call has the potential to reconstruct the object.
+* `construction_permission (default: True)`: While it is false, the object can not be constructed. If you want the object be auto constructable but you want to ensure it will not be constructed till some event, you can initialize it to `False` and after the event, flip it to `True`. Change construnction permission using `set_construction_permission` function.
 
 **add_to_construction_requirements(self, \*\*requirements):** Use this function to add to construction requirements after initialization. Its very useful when you are using inheritance.
 
-**A technique:** If `auto_construct` be true and all the requirements defined in the initialization satisfied befor calling `add_to_construction_requirements`, the object will be completly constructed and will not catch new requirements. To prevent this state, you can simply add an unreal requirement in initialization and set it to `None`. It will prevent the object to be auto constructed untill you give a value to it. After calling `add_to_construction_requirements`, you can simply satisfy this virtual requirement using `meet_requirement` function and ignore it in `__construct__`.
+**A technique:** If `auto_construct` be true and all the requirements defined in the initialization satisfied befor calling `add_to_construction_requirements`, the object will be completly constructed and will not catch new requirements. To prevent this state, you can simply set `construction_permission` to `False`. It will prevent the object to be auto constructed untill you call `instance.set_construction_permission(True)`. Use this function after calling `add_to_construction_requirements`.
+
+```python
+from construction_requirements_integrator import CRI, construction_required
+from random import random
+
+
+class Parent(CRI):
+    def __init__(self, x=None, y=None, construction_permission=True):
+        CRI.__init__(self, x=x, y=y, construction_permission=construction_permission)
+
+    def __construct__(self, x, y):
+        self.x = x
+        self.y = y
+        self.s = self.x*self.y
+
+    @construction_required
+    def get_s(self):
+        return self.s
+
+class Child(Parent):
+    def __init__(self, z=None, **kwargs):
+        super().__init__(construction_permission=False, **kwargs)
+        self.add_to_construction_requirements(z=z)
+        self.set_construction_permission(True)
+
+    def __construct__(self, z, **kwargs):
+        super().__construct__(**kwargs)
+        self.z = z
+        self.v = self.x*self.y*self.z
+
+    @construction_required
+    def get_v(self):
+        return self.v
+
+p = Parent(x=2, y=3)
+print(p.get_s())
+# >>> 6
+c = Child(x=2, y=3)
+print(c.is_constructed)
+# >>> False
+c.meet_requirement(z=4)
+print(c.is_constructed)
+# >>> True
+print(c.get_v())
+# >>> 24
+c2 = Child(x=2, y=3, z=4)
+print(c2.get_v())
+# >>> 24
+```
 
 ## Installation
 
