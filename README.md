@@ -86,6 +86,8 @@ print(example2.__dict__)
 
 You can prevent this deletion by setting `purge_after_construction` to `False`.
 * `reconstruct (default: False)`: If true, allows the class to be reconstructed with new values. Note that you can not set both `purge_after_construction` and `reconstruct` to `True` because reconstruction needs construction requirements. Also note that if `auto_construct` be true, every `meet_requirement` call has the potential to reconstruct the object.
+* `ignore_constructed_error (default: False)`: If `reconstruct` be not true and one construction requirement meets when the onject is constructed, the object raises an error. This error will not be published if `ignore_constructed_error` is true.
+* `allow_useless_overwrite (default: True)`: Will ignore the errors when one construction requirement meets multiple times or after end of construction just if new value of the requirement be same as old value.
 * `construction_permission (default: True)`: While it is false, the object can not be constructed. If you want the object be auto constructable but you want to ensure it will not be constructed till some event, you can initialize it to `False` and after the event, flip it to `True`. Change construnction permission using `set_construction_permission` function.
 
 **add_to_construction_requirements(self, \*\*requirements):** Use this function to add to construction requirements after initialization. Its very useful when you are using inheritance.
