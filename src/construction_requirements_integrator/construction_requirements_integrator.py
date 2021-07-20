@@ -6,7 +6,6 @@ class CRI(ABC):
         overwrite_requirement: bool = False,
         ignore_overwrite_error: bool = False,
         ignore_constructed_error: bool = False,
-        allow_useless_overwrite: bool = True,
         auto_construct: bool = True,
         purge_after_construction: bool = True,
         reconstruct: bool = False,
@@ -17,7 +16,6 @@ class CRI(ABC):
         self.__overwrite_requirement = overwrite_requirement
         self.__ignore_overwrite_error = ignore_overwrite_error
         self.__ignore_constructed_error = ignore_constructed_error
-        self.__allow_useless_overwrite = allow_useless_overwrite
         self.__auto_construct = auto_construct
         if purge_after_construction and reconstruct:
             raise Exception("Can not reconstruct an object after purging it!")
@@ -73,15 +71,13 @@ class CRI(ABC):
     def meet_requirement(self, **kwargs) -> None:
         if len(kwargs)>1:
             raise Exception("No more than one requirement can be set at a call.")
-        requirement,value = next(iter(kwargs.items()))
-        if value is None:
-            raise Exception("Can not set a requirement to None.")
-        if value==self.__requirements[requirement] and self.__allow_useless_overwrite:
-            return
         if self.is_constructed and not self.__reconstruct:
             if self.__ignore_constructed_error:
                 return
             raise Exception("The object has already been constructed.")
+        requirement,value = next(iter(kwargs.items()))
+        if value is None:
+            raise Exception("Can not set a requirement to None.")
         if self.__requirements[requirement] is None or self.__overwrite_requirement:
             self.__requirements[requirement] = value
         elif not self.__ignore_overwrite_error:
