@@ -91,6 +91,8 @@ You can prevent this deletion by setting `purge_after_construction` to `False`.
 
 **add_to_construction_requirements(self, \*\*requirements):** Use this function to add to construction requirements after initialization. Its very useful when you are using inheritance.
 
+**requirement_value(self, requirement):** Use this function to access to value setted to a requirement. If `purge_after_construction` is `True`, this function will not be available after construction completion.
+
 **A technique:** If `auto_construct` be true and all the requirements defined in the initialization satisfied befor calling `add_to_construction_requirements`, the object will be completly constructed and will not catch new requirements. To prevent this state, you can simply set `construction_permission` to `False`. It will prevent the object to be auto constructed untill you call `instance.set_construction_permission(True)`. Use this function after calling `add_to_construction_requirements`.
 
 ```python
