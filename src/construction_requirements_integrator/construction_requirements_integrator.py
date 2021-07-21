@@ -84,6 +84,10 @@ class CRI(ABC):
             raise Exception("The requirement has already been met.")
         self.__do_auto_construct()
 
+    def requirement_value(self, requirement):
+        if self.is_constructed and self.__purge_after_construction:
+            raise Exception("The object has already been constructed")
+        return self.__requirements[requirement]
 
 
 def construction_required(function):
