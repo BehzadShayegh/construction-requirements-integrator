@@ -28,7 +28,7 @@ class CRI(ABC):
     def add_to_construction_requirements(self, **requirements):
         if self.is_constructed:
             raise Exception("Can not add requrements to a constructed object")
-        self.__requirements.update(**requirements)
+        self.__requirements.update(requirements)
 
     def set_construction_permission(self, construction_permission):
         self.__construction_permission = construction_permission
