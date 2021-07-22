@@ -56,7 +56,6 @@ class CRI(ABC):
             del self.__overwrite_requirement
             del self.__ignore_overwrite_error
             del self.__auto_construct
-            del self.__purge_after_construction
             del self.__construction_permission
     
     def integrate_requirements(self, ignore_requirements_meeting_error=False) -> None:
@@ -83,6 +82,7 @@ class CRI(ABC):
         elif not self.__ignore_overwrite_error:
             raise Exception("The requirement has already been met.")
         self.__do_auto_construct()
+
 
     def requirement_value(self, requirement):
         if self.is_constructed and self.__purge_after_construction:
