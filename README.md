@@ -8,7 +8,7 @@ The problem is that both `XProvider` and `YProvder` need their target object to 
 * Inherit your class that needs uncompleted construction from the `CRI` abstract class.
 * Pass the construction required arguments to the `CRI.__init__` (in the `__init__` function of inherited class). We will call them "construction requirements." Don't forget to set the default value of the delayable construction requirements in the `__init__` function of the inherited class to `None`. The `None` value is what `CRI` knows as "NOT YET"!
 * Override abstract `__construct__` function in the inherited class. Arguments are the same as construction requirements.
-* Once you get an instance of your inherited class, you can pass to it each construction requirement value that you already know as initialization arguments. After that, you can assign values to construction requirements using `instance.meet_requirement` function.
+* Once you get an instance of your inherited class, you can pass to it each construction requirement value that you already know as initialization arguments. After that, you can assign values to construction requirements using the `instance.meet_requirement` function.
 * The instance starts to complete the construction, As soon as the class requirements are met.
 * Use `construction_required` decorator to avoid running a function before completion of the construction. In the example below, `get_construction_status` can be called before completion of construction, but `get_volume` can not.
 
